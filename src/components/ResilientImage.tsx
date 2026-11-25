@@ -8,6 +8,16 @@ interface ResilientImageProps {
   fallbackTitle?: string;
 }
 
+function resolveAssetSrc(src: string): string {
+  if (!src) return src;
+  if (src.startsWith('/assets/') || src.startsWith('/src/assets/')) {
+    const base = import.meta.env.BASE_URL || './';
+    const normalizedBase = base.endsWith('/') ? base : `${base}/`;
+    return `${normalizedBase}${src.slice(1)}`;
+  }
+  return src;
+}
+
 export function ResilientImage({
   src,
   alt,
@@ -15,8 +25,9 @@ export function ResilientImage({
   fallbackTitle,
 }: ResilientImageProps) {
   const [hasError, setHasError] = useState(false);
+  const resolvedSrc = resolveAssetSrc(src);
 
-  if (hasError || !src) {
+  if (hasError || !resolvedSrc) {
     return (
       <div
         className={`flex flex-col items-center justify-center bg-gradient-to-br from-[#5F1317] via-[#0B2B20] to-[#1A080B] text-[#FDE047] px-4 text-center ${className}`}
@@ -33,7 +44,7 @@ export function ResilientImage({
 
   return (
     <img
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       referrerPolicy="no-referrer"
       onError={() => setHasError(true)}
